@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraHabit - Professional Desktop Habit Tracker</title>
+  <meta name="description" content="A professional, aesthetic desktop habit tracker planner web application designed for real-world routine building, preset template libraries, and clean month tracking.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js for Dashboard Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="desktop-canvas">
+    
+    <!-- TOP HEADER NAVBAR -->
+    <header class="top-nav-header">
+      <div class="header-left">
+        <div class="app-logo">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <div>
+          <h1 class="brand-title">AuraHabit</h1>
+          <p class="brand-tagline">Professional Routine Planner • Desktop Edition</p>
+        </div>
+      </div>
+
+      <!-- Month & Year Controls -->
+      <div class="header-month-picker">
+        <button class="nav-month-btn" id="prev-month-btn" title="Previous Month"><i data-lucide="chevron-left"></i></button>
+        <div class="month-title-display">
+          <span id="current-month-name">September</span>
+          <span id="current-year-num" class="year-sub">2026</span>
+        </div>
+        <button class="nav-month-btn" id="next-month-btn" title="Next Month"><i data-lucide="chevron-right"></i></button>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="preset-library-btn" title="Load Preset Routines">
+          <i data-lucide="library"></i> Habit Presets
+        </button>
+        <button class="btn btn-secondary btn-sm" id="data-mode-toggle-btn" title="Switch Fresh / Demo Mode">
+          <i data-lucide="sparkles"></i> <span id="data-mode-label">Demo Mode</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+          <i data-lucide="moon" id="theme-icon"></i>
+        </button>
+        <button class="btn btn-secondary btn-sm" id="print-sheet-btn" title="Print / PDF Export">
+          <i data-lucide="printer"></i> Print
+        </button>
+        <button class="btn btn-primary btn-sm" id="add-habit-btn">
+          <i data-lucide="plus"></i> Add Habit
+        </button>
+      </div>
+    </header>
+
+    <!-- NEW USER WELCOME / ONBOARDING BANNER -->
+    <section class="welcome-onboarding-banner" id="onboarding-banner">
+      <div class="banner-left">
+        <div class="banner-icon"><i data-lucide="rocket"></i></div>
+        <div>
+          <h2>Welcome to your Habit Tracker!</h2>
+          <p>Start tracking your personal routine for <strong><span id="banner-month-name">September</span> 2026</strong>. Add custom habits or choose from curated professional preset routines.</p>
+        </div>
+      </div>
+      <div class="banner-actions">
+        <button class="btn btn-white btn-sm" id="banner-presets-btn">
+          <i data-lucide="layout-grid"></i> Browse Habit Templates
+        </button>
+        <button class="btn btn-outline-white btn-sm" id="banner-fresh-btn">
+          <i data-lucide="rotate-ccw"></i> Start Fresh (Clean Grid)
+        </button>
+        <button class="banner-dismiss-btn" id="dismiss-banner-btn" title="Dismiss Banner"><i data-lucide="x"></i></button>
+      </div>
+    </section>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="dashboard-main">
+
+      <!-- SECTION 1: TOP SUMMARY METER RINGS -->
+      <section class="summary-rings-section">
+        <!-- Main Overall Summary Card -->
+        <div class="summary-ring-card main-summary">
+          <div class="ring-card-header">
+            <h3 class="month-heading" id="summary-month-heading">September</h3>
+            <span class="sheet-sub">- HABIT TRACKER -</span>
+          </div>
+          <div class="ring-content-row">
+            <div class="ring-svg-container">
+              <svg class="ring-svg" width="90" height="90">
+                <circle class="ring-bg" cx="45" cy="45" r="38"></circle>
+                <circle class="ring-fill main-fill" id="ring-overall-fill" cx="45" cy="45" r="38"></circle>
+              </svg>
+              <div class="ring-text-val" id="ring-overall-percent">0%</div>
+            </div>
+            <div class="summary-counts">
+              <div class="count-box completed">
+                <span class="count-num" id="total-completed-count">0</span>
+                <span class="count-label">COMPLETED</span>
+              </div>
+              <div class="count-box goal">
+                <span class="count-num" id="total-goal-count">0</span>
+                <span class="count-label">GOAL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Summary Ring 1 -->
+        <div class="summary-ring-card week-1-card">
+          <div class="ring-card-title">WEEK 1</div>
+          <div class="ring-svg-container">
+            <svg class="ring-svg" width="76" height="76">
+              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
+              <circle class="ring-fill w1-fill" id="ring-w1-fill" cx="38" cy="38" r="32"></circle>
+            </svg>
+            <div class="ring-text-val" id="ring-w1-percent">0%</div>
+          </div>
+        </div>
+
+        <!-- Weekly Summary Ring 2 -->
+        <div class="summary-ring-card week-2-card">
+          <div class="ring-card-title">WEEK 2</div>
+          <div class="ring-svg-container">
+            <svg class="ring-svg" width="76" height="76">
+              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
+              <circle class="ring-fill w2-fill" id="ring-w2-fill" cx="38" cy="38" r="32"></circle>
+            </svg>
+            <div class="ring-text-val" id="ring-w2-percent">0%</div>
+          </div>
+        </div>
+
+        <!-- Weekly Summary Ring 3 -->
+        <div class="summary-ring-card week-3-card">
+          <div class="ring-card-title">WEEK 3</div>
+          <div class="ring-svg-container">
+            <svg class="ring-svg" width="76" height="76">
+              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
+              <circle class="ring-fill w3-fill" id="ring-w3-fill" cx="38" cy="38" r="32"></circle>
+            </svg>
+            <div class="ring-text-val" id="ring-w3-percent">0%</div>
+          </div>
+        </div>
+
+        <!-- Weekly Summary Ring 4 -->
+        <div class="summary-ring-card week-4-card">
+          <div class="ring-card-title">WEEK 4</div>
+          <div class="ring-svg-container">
+            <svg class="ring-svg" width="76" height="76">
+              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
+              <circle class="ring-fill w4-fill" id="ring-w4-fill" cx="38" cy="38" r="32"></circle>
+            </svg>
+            <div class="ring-text-val" id="ring-w4-percent">0%</div>
+          </div>
+        </div>
+
+        <!-- Weekly Summary Ring 5 -->
+        <div class="summary-ring-card week-5-card">
+          <div class="ring-card-title">WEEK 5</div>
+          <div class="ring-svg-container">
+            <svg class="ring-svg" width="76" height="76">
+              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
+              <circle class="ring-fill w5-fill" id="ring-w5-fill" cx="38" cy="38" r="32"></circle>
+            </svg>
+            <div class="ring-text-val" id="ring-w5-percent">0%</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: MIDDLE CHARTS ROW -->
+      <section class="charts-dashboard-row">
+        <!-- Daily Habit Count Bar Chart -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>DAILY HABIT COUNT</h3>
+            <span class="chart-sub-tag">Completions per Day</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="daily-count-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Habit Count By Category Horizontal Bar Chart -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>HABIT COUNT BY CATEGORY</h3>
+            <div class="chart-legend-custom">
+              <span class="legend-dot completed"></span> Completed
+              <span class="legend-dot not-completed"></span> Goal Remaining
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="category-count-chart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: SPREADSHEET HABIT TRACKER GRID TABLE -->
+      <section class="spreadsheet-section">
+        <div class="sheet-top-toolbar">
+          <div class="toolbar-left">
+            <h3 class="sheet-title">Monthly Routine Grid</h3>
+            <span class="today-focus-badge" id="today-focus-indicator"><i data-lucide="calendar"></i> Today: Sep 6</span>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-secondary btn-sm" id="check-today-all-btn" title="Check all active habits for Today">
+              <i data-lucide="check-check"></i> Complete Today
+            </button>
+            <button class="btn btn-secondary btn-sm" id="clear-month-logs-btn" title="Clear all logs for current month">
+              <i data-lucide="eraser"></i> Clear Month Logs
+            </button>
+          </div>
+        </div>
+
+        <div class="sheet-table-wrapper">
+          <table class="spreadsheet-table" id="habit-spreadsheet-table">
+            <thead>
+              <!-- Header Row 1: Week Banners -->
+              <tr class="header-week-row">
+                <th class="col-habit-title" rowspan="3">DAILY HABITS</th>
+                <th class="col-category" rowspan="3">Category</th>
+                <th class="col-goal" rowspan="3">Month Goal</th>
+                <th class="week-header w1-bg" colspan="7">WEEK 1</th>
+                <th class="week-header w2-bg" colspan="7">WEEK 2</th>
+                <th class="week-header w3-bg" colspan="7">WEEK 3</th>
+                <th class="week-header w4-bg" colspan="7">WEEK 4</th>
+                <th class="week-header w5-bg" id="w5-header-cell" colspan="2">WEEK 5</th>
+                <th class="col-progress" rowspan="3">Progress</th>
+                <th class="col-actions" rowspan="3"></th>
+              </tr>
+
+              <!-- Header Row 2: Day of Week Letters (S M T W T F S) -->
+              <tr class="header-days-row" id="table-days-letter-row">
+                <!-- Injected dynamically via JS -->
+              </tr>
+
+              <!-- Header Row 3: Day Numbers (1 2 3 ... 30/31) -->
+              <tr class="header-dates-row" id="table-day-numbers-row">
+                <!-- Injected dynamically via JS -->
+              </tr>
+            </thead>
+
+            <tbody id="spreadsheet-tbody">
+              <!-- Habit Spreadsheet Rows rendered dynamically -->
+            </tbody>
+
+            <tfoot id="spreadsheet-tfoot">
+              <!-- Footer Summary Rows (Daily Completed, Daily Not Completed, % Completion) -->
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="sheet-controls-bar">
+          <button class="btn btn-secondary btn-sm" id="add-table-row-btn">
+            <i data-lucide="plus"></i> Add Custom Habit Row
+          </button>
+          <button class="btn btn-secondary btn-sm" id="open-preset-modal-btn">
+            <i data-lucide="sparkles"></i> Load Preset Bundles
+          </button>
+          <div class="sheet-stats-summary" id="table-footer-total-summary">
+            0 / 0 Habits Completed (0%)
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ADD / EDIT HABIT MODAL DIALOG -->
+  <div class="modal-backdrop hidden" id="habit-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Habit to Tracker</h3>
+        <button class="close-btn" id="close-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <form id="habit-form" class="modal-body">
+        <input type="hidden" id="habit-id">
+
+        <div class="form-group">
+          <label for="habit-name">Habit Title *</label>
+          <input type="text" id="habit-name" placeholder="e.g., Morning Meditation or Drink 2L Water" required maxlength="45">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="habit-category">Category</label>
+            <select id="habit-category">
+              <option value="health">Health 🩺</option>
+              <option value="productivity">Productivity ⚡</option>
+              <option value="family">Family 👪</option>
+              <option value="fitness">Fitness 🏋️</option>
+              <option value="sleep">Sleep 🌙</option>
+              <option value="study">Study 📚</option>
+              <option value="social">Social 💬</option>
+              <option value="diet">Diet 🍎</option>
+              <option value="career">Career 💼</option>
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label for="habit-month-goal">Monthly Goal Count</label>
+            <input type="number" id="habit-month-goal" min="1" max="31" value="20">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-modal-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-habit-btn">Save Habit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PRESET HABIT BUNDLE LIBRARY MODAL -->
+  <div class="modal-backdrop hidden" id="template-modal">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div>
+          <h3>Choose a Preset Routine Bundle</h3>
+          <p class="modal-sub">Pick a curated set of professional habits to kickstart your monthly planner</p>
+        </div>
+        <button class="close-btn" id="close-template-modal-btn"><i data-lucide="x"></i></button>
+      </div>
+      <div class="preset-grid-container" id="preset-bundle-list">
+        <!-- Preset Cards rendered dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/storage.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
