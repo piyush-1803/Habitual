@@ -1,63 +1,82 @@
-# Habitual - Desktop Spreadsheet Habit Tracker
+# Terrain Contour Explorer 🏔️
 
-**Habitual** is a modern, aesthetic, interactive desktop web application designed to replace static spreadsheet habit trackers (like Etsy Microsoft Excel & Google Sheets planners) with dynamic progress calculation, real-time analytics charts, weekly circular progress rings, and a 31-day interactive habit grid.
+An interactive, WebGL-accelerated 3D & 2D procedural landscape generator and real-time contour mapping laboratory.
 
-![AuraHabit Banner](https://img.shields.io/badge/AuraHabit-Desktop%20Planner-6366f1?style=for-the-badge)
-![Tech](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20JS%20%7C%20Chart.js-818cf8?style=for-the-badge)
+![Terrain Contour Explorer Banner](https://img.shields.io/badge/Terrain%20Explorer-3D%20WebGL-ff5a36?style=for-the-badge)
+![Tech Stack](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20JavaScript%20%7C%20Plotly.js-00a8ff?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
 
 ## ✨ Features
 
-- **📊 Dynamic Desktop Dashboard**: Widescreen layout with a top month picker, overall monthly completion ring, and 5 weekly circular progress meters (Week 1 to Week 5).
-- **📈 Interactive Analytics Charts**:
-  - **Daily Habit Count Chart**: Chart.js bar chart showing completions across days 1 to 31.
-  - **Habit Count by Category**: Stacked horizontal bar chart showing progress across Health 🩺, Productivity ⚡, Family 👪, Fitness 🏋️, Sleep 🌙, Study 📚, Social 💬, Diet 🍎, and Career 💼.
-- **📅 31-Day Interactive Spreadsheet Grid**:
-  - Color-coded weekly header banners matching pastel planner aesthetics.
-  - Glowing **Today Column Highlight** for the active date.
-  - One-tap checkbox completion with Web Audio API chime sounds and confetti fanfare on 100% daily completion.
-  - Progress ratio & mini visual progress bar per habit.
-- **🚀 Onboarding & Presets**:
-  - **Preset Routine Library**: One-click curated bundles (*Morning & Mindfulness, Fitness & Peak, High Performance, Wellbeing & Balance*).
-  - **Fresh vs. Demo Mode**: Switch between clean real-world tracking and pre-filled sample datasets.
-- **🖨️ PDF & Print Export**: Printable CSS rules for printing physical monthly sheets or exporting as PDF.
-- **💾 LocalStorage & JSON Backup**: Save progress automatically across reloads with JSON export & restore capability.
+- **🏔️ Procedural Multiscale Terrain Synthesis**:
+  - Seed-driven deterministic PRNG (`Mulberry32`).
+  - Domain-warped ridged multifractals generating realistic knife-edge arêtes, glacial cirques, and deep V-shaped valleys across a $24 \times 24\text{ km}$ massif.
+- **📐 Real-Time Marching Squares Contour Extraction**:
+  - High-precision contour line extraction with guarded linear edge interpolation.
+  - Automatically identifies and emphasizes index contours (every 5th line bolded) across customizable 50m, 100m, and 200m intervals.
+- **🔪 Dynamic Elevation Slice & Hypsometric Analysis**:
+  - Smooth, `requestAnimationFrame`-throttled elevation slice plane ($z = c$).
+  - Real-time **Hypsometric Area Readout**: computes the exact percentage of land area lying below the current slice plane via $O(\log N)$ binary search.
+- **🎥 Dual Viewport Perspectives**:
+  - **3D Perspective Mode**: Full 6-DOF orbit, pan, and zoom around the mountain range with ambient + specular directional sun lighting.
+  - **2D Top-Down Mode**: Orthographic bird's-eye projection transforming the landscape into a clean topographic map with automated pan controls.
+- **▶️ Auto-Sweep Animation**:
+  - One-click auto-slice sweep dynamically showcasing contour line evolution as elevation ascends.
+- **🎨 Curated Scientific & Topographic Color Themes**:
+  - **Alpine Topo**: Lush valley green $\to$ highland olive $\to$ rocky brown $\to$ alpine snow.
+  - **USGS Earth**: Classic earthy hypsometric tones.
+  - **Viridis**: Perceptually uniform scientific palette.
+  - **Magma Heat**: High-contrast thermal imaging palette.
+  - **Slate Monolith**: Minimalist architectural dark palette.
+- **📷 1-Click High-Res Snapshot**:
+  - Instant $1920 \times 1080$ PNG render download for cartography, posters, or research.
+- **⌨️ Keyboard Navigation**:
+  - <kbd>Space</kbd>: Toggle auto-sweep animation
+  - <kbd>←</kbd> / <kbd>→</kbd> or <kbd>↑</kbd> / <kbd>↓</kbd>: Nudge elevation slice
+  - <kbd>2</kbd> / <kbd>3</kbd>: Switch between 2D Top-down and 3D Perspective
+  - <kbd>N</kbd>: Generate new terrain seed
 
 ---
 
 ## 🚀 Quick Start
 
-1. Clone or download this repository:
-   ```bash
-   git clone https://github.com/piyush-1803/Habitual.git
-   ```
-2. Open `index.html` directly in any web browser, or serve locally using Python:
-   ```bash
-   py -m http.server 8080
-   ```
-3. Open `http://localhost:8080` in your web browser.
+No build steps or dependencies required. Simply open `index.html` in any modern web browser:
+
+```bash
+# Clone the repository
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
+
+# Open in browser directly, or serve locally:
+python -m http.server 8080
+```
+
+Then visit `http://localhost:8080` in your browser.
 
 ---
 
-## 📁 Repository Structure
+## 🎮 Controls
 
-```
-Habitual/
-├── index.html        # Main desktop dashboard layout & modals
-├── css/
-│   └── styles.css    # Pastel design system, spreadsheet grid & print styles
-├── js/
-│   ├── storage.js    # LocalStorage engine, preset bundles & seed data
-│   ├── analytics.js  # Math engine for weekly rings & daily totals
-│   ├── notifications.js # Web Audio API chime synth & toast alerts
-│   ├── components.js # Chart.js renderers & spreadsheet grid builder
-│   └── app.js        # Controller & onboarding banner logic
-└── README.md
-```
+| Action | 3D Perspective Mode | 2D Top-Down Mode |
+|---|---|---|
+| **Rotate** | Left-click + drag | Disabled (locked to orthographic) |
+| **Pan** | Right-click + drag / Shift + drag | Left-click + drag |
+| **Zoom** | Mouse scroll wheel / Pinch | Mouse scroll wheel / Pinch |
+| **Adjust Slice** | Slider / <kbd>←</kbd> <kbd>→</kbd> | Slider / <kbd>←</kbd> <kbd>→</kbd> |
+| **Auto-Sweep** | <kbd>Space</kbd> / ▶ Play button | <kbd>Space</kbd> / ▶ Play button |
 
 ---
 
-## 🎨 Aesthetic Theme
+## 🛠️ Architecture & Tech Stack
 
-Supports crisp pastel light mode and dark planner mode. Built with pure HTML5, CSS3, ES6 JavaScript, Chart.js, Lucide Icons, and Canvas Confetti.
+- **Plotly.js (WebGL)**: 3D Surface & 3D Line scatter plots with custom lighting models.
+- **Procedural Math**: 2D Gradient Perlin Noise with domain rotation and octave persistence.
+- **Pure Client-Side**: Zero backend required; works entirely offline once loaded or cached.
+
+---
+
+## 📄 License
+
+MIT License. Free to use, modify, and distribute for educational, scientific, or personal projects.

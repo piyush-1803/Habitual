@@ -1,352 +1,973 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AuraHabit - Professional Desktop Habit Tracker</title>
-  <meta name="description" content="A professional, aesthetic desktop habit tracker planner web application designed for real-world routine building, preset template libraries, and clean month tracking.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terrain Contour Explorer</title>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script>
+  if (!window.Plotly) {
+    const s = document.createElement('script');
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly.min.js";
+    document.head.appendChild(s);
+  }
+</script>
+<style>
+  :root {
+    --bg: #0c1014;
+    --panel: #141a21;
+    --panel-hover: #1b242e;
+    --line: #242f3a;
+    --text: #e7edf2;
+    --muted: #8a99a8;
+    --accent: #ff5a36;
+    --accent-hover: #ff7354;
+    --accent-subtle: rgba(255, 90, 54, 0.15);
+    --badge-bg: #1e2832;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  /* Control Header */
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 10px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    z-index: 10;
+  }
+  .title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 200px;
+  }
+  .title h1 {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .title .version-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--accent-subtle);
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .title p {
+    margin: 3px 0 0;
+    font-size: 0.76rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  /* Slider Group */
+  .slice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 360px;
+    min-width: 270px;
+    max-width: 620px;
+    background: rgba(0, 0, 0, 0.22);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .slice label {
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .slice input[type=range] {
+    flex: 1;
+    accent-color: var(--accent);
+    cursor: pointer;
+    height: 20px;
+  }
+  .readout-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 14ch;
+    justify-content: flex-end;
+  }
+  .readout {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .sub-readout {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
 
-  <!-- Chart.js for Dashboard Visualizations -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  /* Buttons & Selects */
+  .group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  button, select {
+    background: var(--panel-hover);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 11px;
+    font: inherit;
+    font-size: 0.81rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  button:hover, select:hover {
+    background: #232e3a;
+    border-color: #435465;
+  }
+  button.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+    font-weight: 600;
+  }
+  button:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .btn-accent {
+    background: var(--accent-subtle);
+    border-color: rgba(255, 90, 54, 0.4);
+    color: #ff7d61;
+  }
+  .btn-accent:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.81rem;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .check:hover { color: var(--text); }
+  .check input { accent-color: var(--accent); cursor: pointer; }
+  .field-label {
+    font-size: 0.80rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-  <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  /* Main Visualizer Area */
+  #plot {
+    flex: 1;
+    width: 100%;
+    min-height: 400px;
+    position: relative;
+  }
+  
+  /* Loading Overlay */
+  #loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    z-index: 20;
+    gap: 14px;
+    transition: opacity 0.3s ease;
+  }
+  .spinner {
+    width: 38px;
+    height: 38px;
+    border: 3px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  <link rel="stylesheet" href="css/styles.css">
+  /* Footer Controls & Hints */
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 18px 9px;
+    font-size: 0.74rem;
+    color: var(--muted);
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    user-select: none;
+  }
+  .kbd-hints { display: flex; align-items: center; gap: 10px; }
+  kbd {
+    background: #1e2630;
+    border: 1px solid #334251;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 0.7rem;
+    font-family: inherit;
+    color: #b0c0cf;
+  }
+
+  @media (max-width: 900px) {
+    body { overflow-y: auto; }
+    .bar { gap: 10px; }
+    .slice { flex: 1 1 100%; max-width: 100%; }
+    .foot { flex-direction: column; align-items: flex-start; }
+  }
+</style>
 </head>
 <body>
-  <div class="desktop-canvas">
-    
-    <!-- TOP HEADER NAVBAR -->
-    <header class="top-nav-header">
-      <div class="header-left">
-        <div class="app-logo">
-          <i data-lucide="sparkles"></i>
-        </div>
-        <div>
-          <h1 class="brand-title">AuraHabit</h1>
-          <p class="brand-tagline">Professional Routine Planner • Desktop Edition</p>
-        </div>
-      </div>
 
-      <!-- Month & Year Controls -->
-      <div class="header-month-picker">
-        <button class="nav-month-btn" id="prev-month-btn" title="Previous Month"><i data-lucide="chevron-left"></i></button>
-        <div class="month-title-display">
-          <span id="current-month-name">September</span>
-          <span id="current-year-num" class="year-sub">2026</span>
-        </div>
-        <button class="nav-month-btn" id="next-month-btn" title="Next Month"><i data-lucide="chevron-right"></i></button>
-      </div>
-
-      <div class="header-actions">
-        <button class="btn btn-secondary btn-sm" id="preset-library-btn" title="Load Preset Routines">
-          <i data-lucide="library"></i> Habit Presets
-        </button>
-        <button class="btn btn-secondary btn-sm" id="data-mode-toggle-btn" title="Switch Fresh / Demo Mode">
-          <i data-lucide="sparkles"></i> <span id="data-mode-label">Demo Mode</span>
-        </button>
-        <button class="btn btn-secondary btn-sm" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
-          <i data-lucide="moon" id="theme-icon"></i>
-        </button>
-        <button class="btn btn-secondary btn-sm" id="print-sheet-btn" title="Print / PDF Export">
-          <i data-lucide="printer"></i> Print
-        </button>
-        <button class="btn btn-primary btn-sm" id="add-habit-btn">
-          <i data-lucide="plus"></i> Add Habit
-        </button>
-      </div>
-    </header>
-
-    <!-- NEW USER WELCOME / ONBOARDING BANNER -->
-    <section class="welcome-onboarding-banner" id="onboarding-banner">
-      <div class="banner-left">
-        <div class="banner-icon"><i data-lucide="rocket"></i></div>
-        <div>
-          <h2>Welcome to your Habit Tracker!</h2>
-          <p>Start tracking your personal routine for <strong><span id="banner-month-name">September</span> 2026</strong>. Add custom habits or choose from curated professional preset routines.</p>
-        </div>
-      </div>
-      <div class="banner-actions">
-        <button class="btn btn-white btn-sm" id="banner-presets-btn">
-          <i data-lucide="layout-grid"></i> Browse Habit Templates
-        </button>
-        <button class="btn btn-outline-white btn-sm" id="banner-fresh-btn">
-          <i data-lucide="rotate-ccw"></i> Start Fresh (Clean Grid)
-        </button>
-        <button class="banner-dismiss-btn" id="dismiss-banner-btn" title="Dismiss Banner"><i data-lucide="x"></i></button>
-      </div>
-    </section>
-
-    <!-- MAIN DASHBOARD CONTENT -->
-    <main class="dashboard-main">
-
-      <!-- SECTION 1: TOP SUMMARY METER RINGS -->
-      <section class="summary-rings-section">
-        <!-- Main Overall Summary Card -->
-        <div class="summary-ring-card main-summary">
-          <div class="ring-card-header">
-            <h3 class="month-heading" id="summary-month-heading">September</h3>
-            <span class="sheet-sub">- HABIT TRACKER -</span>
-          </div>
-          <div class="ring-content-row">
-            <div class="ring-svg-container">
-              <svg class="ring-svg" width="90" height="90">
-                <circle class="ring-bg" cx="45" cy="45" r="38"></circle>
-                <circle class="ring-fill main-fill" id="ring-overall-fill" cx="45" cy="45" r="38"></circle>
-              </svg>
-              <div class="ring-text-val" id="ring-overall-percent">0%</div>
-            </div>
-            <div class="summary-counts">
-              <div class="count-box completed">
-                <span class="count-num" id="total-completed-count">0</span>
-                <span class="count-label">COMPLETED</span>
-              </div>
-              <div class="count-box goal">
-                <span class="count-num" id="total-goal-count">0</span>
-                <span class="count-label">GOAL</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Weekly Summary Ring 1 -->
-        <div class="summary-ring-card week-1-card">
-          <div class="ring-card-title">WEEK 1</div>
-          <div class="ring-svg-container">
-            <svg class="ring-svg" width="76" height="76">
-              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
-              <circle class="ring-fill w1-fill" id="ring-w1-fill" cx="38" cy="38" r="32"></circle>
-            </svg>
-            <div class="ring-text-val" id="ring-w1-percent">0%</div>
-          </div>
-        </div>
-
-        <!-- Weekly Summary Ring 2 -->
-        <div class="summary-ring-card week-2-card">
-          <div class="ring-card-title">WEEK 2</div>
-          <div class="ring-svg-container">
-            <svg class="ring-svg" width="76" height="76">
-              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
-              <circle class="ring-fill w2-fill" id="ring-w2-fill" cx="38" cy="38" r="32"></circle>
-            </svg>
-            <div class="ring-text-val" id="ring-w2-percent">0%</div>
-          </div>
-        </div>
-
-        <!-- Weekly Summary Ring 3 -->
-        <div class="summary-ring-card week-3-card">
-          <div class="ring-card-title">WEEK 3</div>
-          <div class="ring-svg-container">
-            <svg class="ring-svg" width="76" height="76">
-              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
-              <circle class="ring-fill w3-fill" id="ring-w3-fill" cx="38" cy="38" r="32"></circle>
-            </svg>
-            <div class="ring-text-val" id="ring-w3-percent">0%</div>
-          </div>
-        </div>
-
-        <!-- Weekly Summary Ring 4 -->
-        <div class="summary-ring-card week-4-card">
-          <div class="ring-card-title">WEEK 4</div>
-          <div class="ring-svg-container">
-            <svg class="ring-svg" width="76" height="76">
-              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
-              <circle class="ring-fill w4-fill" id="ring-w4-fill" cx="38" cy="38" r="32"></circle>
-            </svg>
-            <div class="ring-text-val" id="ring-w4-percent">0%</div>
-          </div>
-        </div>
-
-        <!-- Weekly Summary Ring 5 -->
-        <div class="summary-ring-card week-5-card">
-          <div class="ring-card-title">WEEK 5</div>
-          <div class="ring-svg-container">
-            <svg class="ring-svg" width="76" height="76">
-              <circle class="ring-bg" cx="38" cy="38" r="32"></circle>
-              <circle class="ring-fill w5-fill" id="ring-w5-fill" cx="38" cy="38" r="32"></circle>
-            </svg>
-            <div class="ring-text-val" id="ring-w5-percent">0%</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 2: MIDDLE CHARTS ROW -->
-      <section class="charts-dashboard-row">
-        <!-- Daily Habit Count Bar Chart -->
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3>DAILY HABIT COUNT</h3>
-            <span class="chart-sub-tag">Completions per Day</span>
-          </div>
-          <div class="chart-container">
-            <canvas id="daily-count-chart"></canvas>
-          </div>
-        </div>
-
-        <!-- Habit Count By Category Horizontal Bar Chart -->
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3>HABIT COUNT BY CATEGORY</h3>
-            <div class="chart-legend-custom">
-              <span class="legend-dot completed"></span> Completed
-              <span class="legend-dot not-completed"></span> Goal Remaining
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas id="category-count-chart"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- SECTION 3: SPREADSHEET HABIT TRACKER GRID TABLE -->
-      <section class="spreadsheet-section">
-        <div class="sheet-top-toolbar">
-          <div class="toolbar-left">
-            <h3 class="sheet-title">Monthly Routine Grid</h3>
-            <span class="today-focus-badge" id="today-focus-indicator"><i data-lucide="calendar"></i> Today: Sep 6</span>
-          </div>
-          <div class="toolbar-right">
-            <button class="btn btn-secondary btn-sm" id="check-today-all-btn" title="Check all active habits for Today">
-              <i data-lucide="check-check"></i> Complete Today
-            </button>
-            <button class="btn btn-secondary btn-sm" id="clear-month-logs-btn" title="Clear all logs for current month">
-              <i data-lucide="eraser"></i> Clear Month Logs
-            </button>
-          </div>
-        </div>
-
-        <div class="sheet-table-wrapper">
-          <table class="spreadsheet-table" id="habit-spreadsheet-table">
-            <thead>
-              <!-- Header Row 1: Week Banners -->
-              <tr class="header-week-row">
-                <th class="col-habit-title" rowspan="3">DAILY HABITS</th>
-                <th class="col-category" rowspan="3">Category</th>
-                <th class="col-goal" rowspan="3">Month Goal</th>
-                <th class="week-header w1-bg" colspan="7">WEEK 1</th>
-                <th class="week-header w2-bg" colspan="7">WEEK 2</th>
-                <th class="week-header w3-bg" colspan="7">WEEK 3</th>
-                <th class="week-header w4-bg" colspan="7">WEEK 4</th>
-                <th class="week-header w5-bg" id="w5-header-cell" colspan="2">WEEK 5</th>
-                <th class="col-progress" rowspan="3">Progress</th>
-                <th class="col-actions" rowspan="3"></th>
-              </tr>
-
-              <!-- Header Row 2: Day of Week Letters (S M T W T F S) -->
-              <tr class="header-days-row" id="table-days-letter-row">
-                <!-- Injected dynamically via JS -->
-              </tr>
-
-              <!-- Header Row 3: Day Numbers (1 2 3 ... 30/31) -->
-              <tr class="header-dates-row" id="table-day-numbers-row">
-                <!-- Injected dynamically via JS -->
-              </tr>
-            </thead>
-
-            <tbody id="spreadsheet-tbody">
-              <!-- Habit Spreadsheet Rows rendered dynamically -->
-            </tbody>
-
-            <tfoot id="spreadsheet-tfoot">
-              <!-- Footer Summary Rows (Daily Completed, Daily Not Completed, % Completion) -->
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="sheet-controls-bar">
-          <button class="btn btn-secondary btn-sm" id="add-table-row-btn">
-            <i data-lucide="plus"></i> Add Custom Habit Row
-          </button>
-          <button class="btn btn-secondary btn-sm" id="open-preset-modal-btn">
-            <i data-lucide="sparkles"></i> Load Preset Bundles
-          </button>
-          <div class="sheet-stats-summary" id="table-footer-total-summary">
-            0 / 0 Habits Completed (0%)
-          </div>
-        </div>
-      </section>
-
-    </main>
+<div class="bar">
+  <div class="title">
+    <h1>Terrain Contour Explorer <span class="version-tag">Pro</span></h1>
+    <p id="stats">Generating terrain…</p>
   </div>
 
-  <!-- ADD / EDIT HABIT MODAL DIALOG -->
-  <div class="modal-backdrop hidden" id="habit-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="modal-title">Add Habit to Tracker</h3>
-        <button class="close-btn" id="close-modal-btn"><i data-lucide="x"></i></button>
-      </div>
-      <form id="habit-form" class="modal-body">
-        <input type="hidden" id="habit-id">
-
-        <div class="form-group">
-          <label for="habit-name">Habit Title *</label>
-          <input type="text" id="habit-name" placeholder="e.g., Morning Meditation or Drink 2L Water" required maxlength="45">
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label for="habit-category">Category</label>
-            <select id="habit-category">
-              <option value="health">Health 🩺</option>
-              <option value="productivity">Productivity ⚡</option>
-              <option value="family">Family 👪</option>
-              <option value="fitness">Fitness 🏋️</option>
-              <option value="sleep">Sleep 🌙</option>
-              <option value="study">Study 📚</option>
-              <option value="social">Social 💬</option>
-              <option value="diet">Diet 🍎</option>
-              <option value="career">Career 💼</option>
-            </select>
-          </div>
-
-          <div class="form-group flex-1">
-            <label for="habit-month-goal">Monthly Goal Count</label>
-            <input type="number" id="habit-month-goal" min="1" max="31" value="20">
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="cancel-modal-btn">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="save-habit-btn">Save Habit</button>
-        </div>
-      </form>
+  <div class="slice">
+    <label for="c">Elevation slice (z = c)</label>
+    <input id="c" type="range" step="10" aria-label="Elevation slice c in metres">
+    <div class="readout-wrap">
+      <span class="readout" id="cval">0 m</span>
+      <span class="sub-readout" id="subReadout">(0%)</span>
     </div>
   </div>
 
-  <!-- PRESET HABIT BUNDLE LIBRARY MODAL -->
-  <div class="modal-backdrop hidden" id="template-modal">
-    <div class="modal-card modal-large">
-      <div class="modal-header">
-        <div>
-          <h3>Choose a Preset Routine Bundle</h3>
-          <p class="modal-sub">Pick a curated set of professional habits to kickstart your monthly planner</p>
-        </div>
-        <button class="close-btn" id="close-template-modal-btn"><i data-lucide="x"></i></button>
-      </div>
-      <div class="preset-grid-container" id="preset-bundle-list">
-        <!-- Preset Cards rendered dynamically via JS -->
-      </div>
-    </div>
+  <div class="group">
+    <button id="btnPlay" title="Auto-sweep elevation slice (Space)">▶ Play</button>
+    <button id="btn3d" class="active" title="Switch to 3D perspective view (3)">Perspective (3D)</button>
+    <button id="btn2d" title="Switch to 2D top-down orthogonal contour view (2)">Top-down (2D)</button>
   </div>
 
-  <!-- TOAST NOTIFICATION CONTAINER -->
-  <div class="toast-container" id="toast-container"></div>
+  <div class="group">
+    <label class="field-label" for="palette">Theme
+      <select id="palette">
+        <option value="topo" selected>Alpine Topo</option>
+        <option value="earth">USGS Earth</option>
+        <option value="viridis">Viridis</option>
+        <option value="magma">Magma Heat</option>
+        <option value="slate">Slate Monolith</option>
+      </select>
+    </label>
 
-  <!-- JavaScript Modules -->
-  <script src="js/storage.js"></script>
-  <script src="js/analytics.js"></script>
-  <script src="js/notifications.js"></script>
-  <script src="js/components.js"></script>
-  <script src="js/app.js"></script>
+    <label class="field-label" for="interval">Interval
+      <select id="interval">
+        <option value="50">50 m</option>
+        <option value="100" selected>100 m</option>
+        <option value="200">200 m</option>
+      </select>
+    </label>
+
+    <label class="check" title="Toggle 3D mountain surface visibility">
+      <input type="checkbox" id="showSurface" checked> Surface
+    </label>
+    <label class="check" title="Toggle horizontal slice cutting plane">
+      <input type="checkbox" id="showPlane" checked> Slice plane
+    </label>
+
+    <button id="btnSnapshot" title="Download high-resolution image">📷 Snapshot</button>
+    <button id="btnNew" class="btn-accent" title="Generate procedural landscape with new seed (N)">✦ New terrain</button>
+  </div>
+</div>
+
+<div id="plot">
+  <div id="loader">
+    <div class="spinner"></div>
+    <div style="font-size:0.85rem;color:var(--muted)">Computing 3D Multiscale Fractal Mesh…</div>
+  </div>
+</div>
+
+<div class="foot">
+  <div id="interactionHint">
+    <strong>3D Controls:</strong> Drag to rotate · Scroll to zoom · Right-drag or Shift-drag to pan · Touch drag/pinch on mobile.
+  </div>
+  <div class="kbd-hints">
+    <span><kbd>Space</kbd> Auto slice</span>
+    <span><kbd>←</kbd> <kbd>→</kbd> Adjust slice</span>
+    <span><kbd>2</kbd> / <kbd>3</kbd> Views</span>
+    <span><kbd>N</kbd> New seed</span>
+  </div>
+</div>
+
+<script>
+window.addEventListener('error', function (e) {
+  const p = document.getElementById('plot');
+  if (p && !p.children.length) {
+    p.innerHTML = '<p style="padding:20px;color:#ff5a36">Error: ' + e.message + '</p>';
+  }
+});
+
+(function () {
+  const plotDiv = document.getElementById('plot');
+  const loader = document.getElementById('loader');
+  const slider = document.getElementById('c');
+  const cval = document.getElementById('cval');
+  const subReadout = document.getElementById('subReadout');
+  const intervalSel = document.getElementById('interval');
+  const paletteSel = document.getElementById('palette');
+  const showSurface = document.getElementById('showSurface');
+  const showPlane = document.getElementById('showPlane');
+  const btn3d = document.getElementById('btn3d');
+  const btn2d = document.getElementById('btn2d');
+  const btnNew = document.getElementById('btnNew');
+  const btnPlay = document.getElementById('btnPlay');
+  const btnSnapshot = document.getElementById('btnSnapshot');
+  const statsEl = document.getElementById('stats');
+  const interactionHint = document.getElementById('interactionHint');
+
+  if (!window.Plotly) {
+    plotDiv.innerHTML = '<p style="padding:24px;color:#ff5a36">Plotly library could not be loaded. Please check your internet connection and reload.</p>';
+    return;
+  }
+
+  /* ================= Deterministic PRNG & Perlin Noise ================= */
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function makeNoise(seed) {
+    const rnd = mulberry32(seed);
+    const p = Array.from({ length: 256 }, (_, i) => i);
+    for (let i = 255; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [p[i], p[j]] = [p[j], p[i]];
+    }
+    const perm = new Uint8Array(512);
+    for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+    const G = [[1,1],[-1,1],[1,-1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+    const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+
+    return function (x, y) {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const xf = x - xi, yf = y - yi;
+      const X = xi & 255, Y = yi & 255;
+      const g = (h, dx, dy) => { const v = G[h & 7]; return v[0] * dx + v[1] * dy; };
+      const aa = perm[perm[X] + Y], ab = perm[perm[X] + Y + 1];
+      const ba = perm[perm[X + 1] + Y], bb = perm[perm[X + 1] + Y + 1];
+      const u = fade(xf), v = fade(yf);
+      const x1 = g(aa, xf, yf) * (1 - u) + g(ba, xf - 1, yf) * u;
+      const x2 = g(ab, xf, yf - 1) * (1 - u) + g(bb, xf - 1, yf - 1) * u;
+      return (x1 * (1 - v) + x2 * v) * 1.41;
+    };
+  }
+
+  /* ================= Terrain Model ================= */
+  const N = 181;
+  const SIZE_KM = 24;
+  const MAX_ELEV = 3200;
+  const xs = new Float64Array(N), ys = new Float64Array(N);
+  for (let i = 0; i < N; i++) {
+    const t = (SIZE_KM * i) / (N - 1);
+    xs[i] = t; ys[i] = t;
+  }
+
+  const smooth = (a, b, x) => {
+    const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  };
+
+  function buildTerrain(seed) {
+    const n = makeNoise(seed);
+    const raw = [];
+    let lo = Infinity, hi = -Infinity;
+    for (let j = 0; j < N; j++) {
+      const row = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        const u = i / (N - 1), v = j / (N - 1);
+        const wx = 0.22 * n(u * 2.0 + 11.3, v * 2.0 + 4.7);
+        const wy = 0.22 * n(u * 2.0 + 31.9, v * 2.0 + 17.1);
+        const px = u + wx, py = v + wy;
+
+        let amp = 1, freq = 2.4, sum = 0, norm = 0, weight = 1;
+        for (let o = 0; o < 7; o++) {
+          let s = 1 - Math.abs(n(px * freq + o * 7.1, py * freq - o * 3.3));
+          s *= s;
+          s *= weight;
+          weight = Math.min(1, Math.max(0, s * 1.8));
+          sum += s * amp; norm += amp;
+          amp *= 0.5; freq *= 2.05;
+        }
+        const ridged = sum / norm;
+
+        let b = 0, ba = 1, bf = 1.1, bn = 0;
+        for (let o = 0; o < 4; o++) {
+          b += n(px * bf + 50 + o, py * bf + 80 - o) * ba;
+          bn += ba; ba *= 0.5; bf *= 2;
+        }
+        const base = 0.5 + 0.5 * (b / bn) * 1.4;
+
+        const dx = u - 0.5, dy = v - 0.5;
+        const d = Math.sqrt(dx * dx + dy * dy) * 2;
+        const mask = 1 - 0.8 * smooth(0.45, 1.1, d);
+
+        const h = (0.62 * ridged + 0.38 * ridged * base) * (0.25 + 0.75 * base) * mask;
+        row[i] = h;
+        if (h < lo) lo = h;
+        if (h > hi) hi = h;
+      }
+      raw.push(row);
+    }
+
+    const range = (hi - lo) || 1;
+    const finalGrid = [];
+    for (let j = 0; j < N; j++) {
+      const row = new Float64Array(N);
+      for (let i = 0; i < N; i++) {
+        row[i] = Math.pow((raw[j][i] - lo) / range, 0.8) * MAX_ELEV;
+      }
+      finalGrid.push(row);
+    }
+    return finalGrid;
+  }
+
+  /* ================= Marching Squares Contour Extraction ================= */
+  // Disambiguated marching squares index table
+  const EDGES = {
+    1: [[3,0]], 2: [[0,1]], 3: [[3,1]], 4: [[1,2]], 5: [[3,0],[1,2]], 6: [[0,2]], 7: [[3,2]],
+    8: [[2,3]], 9: [[0,2]], 10: [[0,1],[2,3]], 11: [[1,2]], 12: [[1,3]], 13: [[0,1]], 14: [[3,0]]
+  };
+
+  function levelCurve(Z, c, px, py) {
+    const interp = (v0, v1, a, b) => {
+      const d = v1 - v0;
+      if (Math.abs(d) < 1e-9) return (a + b) * 0.5;
+      const t = Math.max(0, Math.min(1, (c - v0) / d));
+      return a + (b - a) * t;
+    };
+
+    for (let j = 0; j < N - 1; j++) {
+      const rowJ = Z[j];
+      const rowJ1 = Z[j + 1];
+      const y0 = ys[j], y1 = ys[j + 1];
+
+      for (let i = 0; i < N - 1; i++) {
+        const v00 = rowJ[i], v10 = rowJ[i + 1];
+        const v11 = rowJ1[i + 1], v01 = rowJ1[i];
+
+        const idx = (v00 >= c ? 1 : 0) | (v10 >= c ? 2 : 0) | (v11 >= c ? 4 : 0) | (v01 >= c ? 8 : 0);
+        if (idx === 0 || idx === 15) continue;
+
+        const x0 = xs[i], x1 = xs[i + 1];
+
+        const edge = e => {
+          if (e === 0) return [interp(v00, v10, x0, x1), y0];
+          if (e === 1) return [x1, interp(v10, v11, y0, y1)];
+          if (e === 2) return [interp(v01, v11, x0, x1), y1];
+          return [x0, interp(v00, v01, y0, y1)];
+        };
+
+        const edgePairs = EDGES[idx];
+        for (let k = 0; k < edgePairs.length; k++) {
+          const p = edge(edgePairs[k][0]);
+          const q = edge(edgePairs[k][1]);
+          px.push(p[0], q[0], null);
+          py.push(p[1], q[1], null);
+        }
+      }
+    }
+  }
+
+  const constArr = (arr, v) => arr.map(p => (p === null ? null : v));
+
+  /* ================= Color Themes ================= */
+  const PALETTES = {
+    topo: [
+      [0.00, '#2e5a3a'], [0.18, '#4f7f46'], [0.34, '#8d9a55'],
+      [0.50, '#8a7048'], [0.66, '#6e6760'], [0.82, '#b7b3ae'],
+      [0.92, '#eceff1'], [1.00, '#ffffff']
+    ],
+    earth: [
+      [0.00, '#1a3c34'], [0.20, '#2d6a4f'], [0.40, '#d8b168'],
+      [0.60, '#aa6f39'], [0.80, '#75523c'], [1.00, '#f8f9fa']
+    ],
+    viridis: [
+      [0.00, '#440154'], [0.25, '#3b528b'], [0.50, '#21918c'],
+      [0.75, '#5ec962'], [1.00, '#fde725']
+    ],
+    magma: [
+      [0.00, '#000004'], [0.25, '#51127c'], [0.50, '#b73779'],
+      [0.75, '#fc8961'], [1.00, '#fcfdbf']
+    ],
+    slate: [
+      [0.00, '#10171d'], [0.30, '#1d2a36'], [0.60, '#3e5264'],
+      [0.85, '#7f95a8'], [1.00, '#dce5ec']
+    ]
+  };
+
+  /* ================= State ================= */
+  let seed = 7;
+  let Z = null;
+  let sortedElevations = null;
+  let zmin = 0, zmax = 0, floorZ = 0;
+  let currentView = '3d';
+  let isPlaying = false;
+  let playAnimId = null;
+  let rafPending = false;
+  let pendingC = null;
+
+  const fmt = v => Math.round(v).toLocaleString('en-US') + ' m';
+
+  const IDX = {
+    SURFACE: 0,
+    PLANE: 1,
+    CURVE3D: 2,
+    CURVEMAP: 3,
+    MAP: 4,
+    MINOR: 5,
+    MAJOR: 6,
+    FRAME: 7
+  };
+
+  // Pre-sort elevations for instant O(log N) hypsometric area calculations
+  function buildSortedElevations(grid) {
+    const arr = new Float64Array(N * N);
+    let idx = 0;
+    for (let j = 0; j < N; j++) {
+      for (let i = 0; i < N; i++) {
+        arr[idx++] = grid[j][i];
+      }
+    }
+    arr.sort();
+    return arr;
+  }
+
+  function getHypsometricPercent(val) {
+    if (!sortedElevations) return 0;
+    let l = 0, r = sortedElevations.length - 1;
+    while (l <= r) {
+      const mid = (l + r) >> 1;
+      if (sortedElevations[mid] <= val) l = mid + 1;
+      else r = mid - 1;
+    }
+    return Math.round((l / sortedElevations.length) * 100);
+  }
+
+  function getActiveColorscale() {
+    return PALETTES[paletteSel.value] || PALETTES.topo;
+  }
+
+  function buildTraces() {
+    const c = +slider.value;
+    const step = +intervalSel.value;
+    const mapZ = floorZ + 4;
+    const activeScale = getActiveColorscale();
+
+    const minX = [], minY = [], majX = [];
+    const majY = [];
+    for (let lvl = Math.ceil(zmin / step) * step; lvl <= zmax; lvl += step) {
+      const major = Math.round(lvl / step) % 5 === 0;
+      if (major) {
+        levelCurve(Z, lvl, majX, majY);
+      } else {
+        levelCurve(Z, lvl, minX, minY);
+      }
+    }
+
+    const cx = [], cy = [];
+    levelCurve(Z, c, cx, cy);
+
+    const flatFloor = [];
+    for (let j = 0; j < N; j++) {
+      const row = new Float64Array(N);
+      row.fill(floorZ);
+      flatFloor.push(row);
+    }
+
+    const is2D = currentView === '2d';
+
+    const traces = [];
+    traces[IDX.SURFACE] = {
+      type: 'surface',
+      x: Array.from(xs),
+      y: Array.from(ys),
+      z: Z,
+      colorscale: activeScale,
+      cmin: zmin,
+      cmax: zmax,
+      visible: is2D ? false : showSurface.checked,
+      colorbar: {
+        title: { text: 'Elevation', font: { color: '#8a99a8', size: 12 } },
+        len: 0.55,
+        thickness: 12,
+        x: 0.98,
+        tickfont: { color: '#8a99a8', size: 10 },
+        ticksuffix: ' m',
+        outlinewidth: 0
+      },
+      lighting: { ambient: 0.5, diffuse: 0.95, specular: 0.08, roughness: 0.85, fresnel: 0.1 },
+      lightposition: { x: -4000, y: 3000, z: 3500 },
+      hovertemplate: 'East: %{x:.2f} km<br>North: %{y:.2f} km<br>Elevation: %{z:.0f} m<extra></extra>'
+    };
+
+    traces[IDX.PLANE] = {
+      type: 'surface',
+      x: [xs[0], xs[N - 1]],
+      y: [ys[0], ys[N - 1]],
+      z: [[c, c], [c, c]],
+      showscale: false,
+      opacity: 0.22,
+      colorscale: [[0, '#ff5a36'], [1, '#ff5a36']],
+      visible: is2D ? false : showPlane.checked,
+      hoverinfo: 'skip'
+    };
+
+    traces[IDX.CURVE3D] = {
+      type: 'scatter3d',
+      mode: 'lines',
+      x: cx,
+      y: cy,
+      z: constArr(cx, c),
+      line: { color: '#ff5a36', width: 7 },
+      visible: !is2D,
+      hoverinfo: 'skip'
+    };
+
+    traces[IDX.CURVEMAP] = {
+      type: 'scatter3d',
+      mode: 'lines',
+      x: cx,
+      y: cy,
+      z: constArr(cx, mapZ + 4),
+      line: { color: '#ff5a36', width: 7 },
+      hoverinfo: 'skip'
+    };
+
+    traces[IDX.MAP] = {
+      type: 'surface',
+      x: Array.from(xs),
+      y: Array.from(ys),
+      z: flatFloor,
+      surfacecolor: Z,
+      colorscale: activeScale,
+      cmin: zmin,
+      cmax: zmax,
+      showscale: false,
+      lighting: { ambient: 1, diffuse: 0, specular: 0 },
+      hovertemplate: 'East: %{x:.2f} km<br>North: %{y:.2f} km<br>Floor: %{surfacecolor:.0f} m<extra></extra>'
+    };
+
+    traces[IDX.MINOR] = {
+      type: 'scatter3d',
+      mode: 'lines',
+      x: minX,
+      y: minY,
+      z: constArr(minX, mapZ),
+      line: { color: 'rgba(20,24,28,0.55)', width: 1.5 },
+      hoverinfo: 'skip'
+    };
+
+    traces[IDX.MAJOR] = {
+      type: 'scatter3d',
+      mode: 'lines',
+      x: majX,
+      y: majY,
+      z: constArr(majX, mapZ),
+      line: { color: 'rgba(10,12,14,0.95)', width: 3.5 },
+      hoverinfo: 'skip'
+    };
+
+    traces[IDX.FRAME] = {
+      type: 'scatter3d',
+      mode: 'lines',
+      x: [xs[0], xs[N - 1], xs[N - 1], xs[0], xs[0]],
+      y: [ys[0], ys[0], ys[N - 1], ys[N - 1], ys[0]],
+      z: [mapZ, mapZ, mapZ, mapZ, mapZ],
+      line: { color: '#6b7c8a', width: 3 },
+      hoverinfo: 'skip'
+    };
+
+    return traces;
+  }
+
+  const axis = (title, range, extra) => Object.assign({
+    title: { text: title, font: { color: '#8a99a8', size: 12 } },
+    range: range,
+    gridcolor: '#1d2732',
+    zerolinecolor: '#1d2732',
+    showbackground: false,
+    tickfont: { color: '#8a99a8', size: 10 }
+  }, extra || {});
+
+  const cam3D = {
+    eye: { x: 1.45, y: -1.75, z: 0.95 },
+    center: { x: 0, y: 0, z: -0.12 },
+    up: { x: 0, y: 0, z: 1 },
+    projection: { type: 'perspective' }
+  };
+
+  const cam2D = {
+    eye: { x: 0, y: 0.0001, z: 2.8 },
+    center: { x: 0, y: 0, z: 0 },
+    up: { x: 0, y: 1, z: 0 },
+    projection: { type: 'orthographic' }
+  };
+
+  function buildLayout() {
+    return {
+      paper_bgcolor: '#0c1014',
+      margin: { l: 0, r: 0, t: 0, b: 0 },
+      showlegend: false,
+      uirevision: 'terrain-' + seed,
+      scene: {
+        xaxis: axis('East (km)', [0, SIZE_KM]),
+        yaxis: axis('North (km)', [0, SIZE_KM]),
+        zaxis: axis('Elevation (m)', [floorZ, zmax + 160]),
+        aspectmode: 'manual',
+        aspectratio: { x: 1.6, y: 1.6, z: 0.58 },
+        camera: currentView === '2d' ? cam2D : cam3D,
+        bgcolor: '#0c1014',
+        dragmode: currentView === '2d' ? 'pan' : 'orbit'
+      }
+    };
+  }
+
+  function render() {
+    loader.style.display = 'none';
+    Plotly.react(plotDiv, buildTraces(), buildLayout(), {
+      responsive: true,
+      displaylogo: false,
+      scrollZoom: true,
+      modeBarButtonsToRemove: ['resetCameraLastSave3d']
+    });
+  }
+
+  /* ================= Fast RAF-Throttled Slider Update ================= */
+  function updateSliderDisplay(c) {
+    cval.textContent = fmt(c);
+    const pct = getHypsometricPercent(c);
+    subReadout.textContent = '(' + pct + '% below slice)';
+    slider.setAttribute('aria-valuenow', c);
+  }
+
+  function performSliceUpdate(c) {
+    const cx = [], cy = [];
+    levelCurve(Z, c, cx, cy);
+    const mapZ = floorZ + 8;
+
+    Plotly.restyle(plotDiv, {
+      x: [cx, cx],
+      y: [cy, cy],
+      z: [constArr(cx, c), constArr(cx, mapZ)]
+    }, [IDX.CURVE3D, IDX.CURVEMAP]);
+
+    Plotly.restyle(plotDiv, {
+      z: [[[c, c], [c, c]]]
+    }, [IDX.PLANE]);
+  }
+
+  function queueSliceUpdate(c) {
+    pendingC = c;
+    updateSliderDisplay(c);
+
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(() => {
+        performSliceUpdate(pendingC);
+        rafPending = false;
+      });
+    }
+  }
+
+  slider.addEventListener('input', function () {
+    if (isPlaying) stopAnimation();
+    queueSliceUpdate(+slider.value);
+  });
+
+  /* ================= Auto-Play Animation Sweep ================= */
+  function startAnimation() {
+    isPlaying = true;
+    btnPlay.textContent = '⏸ Pause';
+    btnPlay.classList.add('active');
+
+    function stepPlay() {
+      if (!isPlaying) return;
+      let nextVal = +slider.value + 15;
+      if (nextVal > +slider.max) nextVal = +slider.min;
+      slider.value = nextVal;
+      queueSliceUpdate(nextVal);
+      playAnimId = setTimeout(() => requestAnimationFrame(stepPlay), 35);
+    }
+    stepPlay();
+  }
+
+  function stopAnimation() {
+    isPlaying = false;
+    btnPlay.textContent = '▶ Play';
+    btnPlay.classList.remove('active');
+    if (playAnimId) clearTimeout(playAnimId);
+  }
+
+  btnPlay.addEventListener('click', function () {
+    if (isPlaying) stopAnimation();
+    else startAnimation();
+  });
+
+  /* ================= View Modes (3D vs 2D) ================= */
+  function setView(mode) {
+    if (currentView === mode) return;
+    currentView = mode;
+
+    btn3d.classList.toggle('active', mode === '3d');
+    btn2d.classList.toggle('active', mode === '2d');
+
+    if (mode === '2d') {
+      interactionHint.innerHTML = '<strong>2D Controls:</strong> Drag to pan · Scroll to zoom · Top-down orthographic map projection.';
+      Plotly.relayout(plotDiv, {
+        'scene.camera': cam2D,
+        'scene.dragmode': 'pan'
+      });
+      // In 2D mode, hide 3D cutting plane and 3D floating curve for clean top-down map
+      Plotly.restyle(plotDiv, { visible: false }, [IDX.PLANE, IDX.CURVE3D, IDX.SURFACE]);
+    } else {
+      interactionHint.innerHTML = '<strong>3D Controls:</strong> Drag to rotate · Scroll to zoom · Right-drag or Shift-drag to pan.';
+      Plotly.relayout(plotDiv, {
+        'scene.camera': cam3D,
+        'scene.dragmode': 'orbit'
+      });
+      Plotly.restyle(plotDiv, {
+        visible: [showSurface.checked, showPlane.checked, true]
+      }, [IDX.SURFACE, IDX.PLANE, IDX.CURVE3D]);
+    }
+  }
+
+  btn3d.addEventListener('click', () => setView('3d'));
+  btn2d.addEventListener('click', () => setView('2d'));
+
+  /* ================= Terrain Generation ================= */
+  function generate(newSeed) {
+    stopAnimation();
+    loader.style.display = 'flex';
+    statsEl.textContent = 'Generating terrain mesh…';
+
+    setTimeout(() => {
+      seed = newSeed;
+      Z = buildTerrain(seed);
+      sortedElevations = buildSortedElevations(Z);
+
+      zmin = sortedElevations[0];
+      zmax = sortedElevations[sortedElevations.length - 1];
+      floorZ = -Math.round(0.12 * MAX_ELEV);
+
+      slider.min = Math.ceil(zmin / 10) * 10;
+      slider.max = Math.floor(zmax / 10) * 10;
+      slider.value = Math.round((zmin + 0.42 * (zmax - zmin)) / 10) * 10;
+
+      slider.setAttribute('aria-valuemin', slider.min);
+      slider.setAttribute('aria-valuemax', slider.max);
+      updateSliderDisplay(+slider.value);
+
+      statsEl.textContent = 'Relief ' + fmt(zmin) + ' to ' + fmt(zmax) + ' · ' + SIZE_KM + ' × ' + SIZE_KM + ' km · seed #' + seed;
+      render();
+    }, 20);
+  }
+
+  /* ================= Theme & Settings Listeners ================= */
+  intervalSel.addEventListener('change', render);
+
+  paletteSel.addEventListener('change', function () {
+    const sc = getActiveColorscale();
+    Plotly.restyle(plotDiv, { colorscale: [sc] }, [IDX.SURFACE, IDX.MAP]);
+  });
+
+  showSurface.addEventListener('change', function () {
+    if (currentView === '3d') {
+      Plotly.restyle(plotDiv, { visible: showSurface.checked }, [IDX.SURFACE]);
+    }
+  });
+
+  showPlane.addEventListener('change', function () {
+    if (currentView === '3d') {
+      Plotly.restyle(plotDiv, { visible: showPlane.checked }, [IDX.PLANE]);
+    }
+  });
+
+  btnNew.addEventListener('click', function () {
+    generate(Math.floor(Math.random() * 999999) + 1);
+  });
+
+  btnSnapshot.addEventListener('click', function () {
+    Plotly.downloadImage(plotDiv, {
+      format: 'png',
+      width: 1920,
+      height: 1080,
+      filename: 'terrain-contour-seed-' + seed
+    });
+  });
+
+  /* ================= Keyboard Navigation ================= */
+  window.addEventListener('keydown', function (e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      btnPlay.click();
+    } else if (e.code === 'ArrowRight' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      const n = Math.min(+slider.max, +slider.value + 20);
+      slider.value = n;
+      queueSliceUpdate(n);
+    } else if (e.code === 'ArrowLeft' || e.code === 'ArrowDown') {
+      e.preventDefault();
+      const n = Math.max(+slider.min, +slider.value - 20);
+      slider.value = n;
+      queueSliceUpdate(n);
+    } else if (e.key === 'n' || e.key === 'N') {
+      btnNew.click();
+    } else if (e.key === '2') {
+      setView('2d');
+    } else if (e.key === '3') {
+      setView('3d');
+    }
+  });
+
+  window.addEventListener('resize', function () {
+    Plotly.Plots.resize(plotDiv);
+  });
+
+  // Initial trigger
+  generate(seed);
+})();
+</script>
 </body>
 </html>
